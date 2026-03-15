@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guruji.info — Экосистема духовных знаний</title>
+    <meta name="description" content="Единая платформа для сохранения и распространения духовных знаний. Календарь событий, база знаний и ИИ-ассистент.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0B0C10;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent: #D4AF37; /* Приглушенное золото */
+            --accent-glow: rgba(212, 175, 55, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            /* Использование dvh для корректного отображения на мобильных (учитывает панели браузера) */
+            height: 100dvh; 
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden; /* Запрет общего скролла */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Декоративный фоновый свет */
+        .bg-glow {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1200px;
+            height: 100%;
+            max-height: 900px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Шапка */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .logo span { color: var(--accent); }
+
+        .status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--surface);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            border: 1px solid var(--surface-border);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+
+        /* Основной контент (Grid-структура) */
+        main {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            min-height: 0; /* Важно для flex-дочерних элементов */
+        }
+
+        /* Левая колонка - Описание */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 4vw, 4rem);
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 1.2vw, 1.2rem);
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            max-width: 90%;
+        }
+
+        /* Правая колонка - Карточки проектов */
+        .projects {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Карточка активного проекта (Календарь) */
+        .card.active-project {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(212,175,55,0.05) 100%);
+            border-color: rgba(212, 175, 55, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card.active-project:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px var(--accent-glow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+        }
+        .badge.live { background: rgba(76, 175, 80, 0.15); color: #4CAF50; }
+        .badge.soon { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Будущие проекты (2 карточки в ряд) */
+        .future-projects-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .card.future {
+            opacity: 0.7;
+        }
+
+        /* Кнопка */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--text-main);
+            color: var(--bg-color);
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            width: max-content;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .btn svg { width: 20px; height: 20px; transition: transform 0.3s ease; }
+        .btn:hover svg { transform: translateX(4px); }
+
+        /* Футер */
+        footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        /* АДАПТИВНОСТЬ */
+        @media (max-width: 992px) {
+            .container { padding: 1.5rem; }
+            main { grid-template-columns: 1fr; gap: 2rem; overflow-y: auto; padding-right: 5px;}
+            /* Стили для скроллбара на планшетах/мобилках, если контент не влезет */
+            main::-webkit-scrollbar { width: 4px; }
+            main::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 4px; }
+            
+            .hero { padding-right: 0; text-align: center; align-items: center; padding-top: 1rem;}
+            .hero p { max-width: 100%; }
+            .bg-glow { width: 100vw; height: 100vw; }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2.2rem; }
+            .future-projects-row { grid-template-columns: 1fr; }
+            .card { padding: 1.5rem; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">guruji<span>.info</span></div>
+            <div class="status">
+                <div class="status-dot"></div>
+                Система активна
+            </div>
+        </header>
+
+        <main>
+            <!-- Левая часть: Приветствие -->
+            <div class="hero">
+                <h1>Цифровая экосистема знаний</h1>
+                <p>Единая платформа для сохранения, структурирования и удобного доступа к духовному наследию. От расписания событий до персонального ИИ-проводника.</p>
+                
+                <!-- Заглушка, если нужно будет добавить общую кнопку -->
+                <!-- <a href="#" class="btn">Узнать больше</a> -->
+            </div>
+
+            <!-- Правая часть: Дашборд проектов -->
+            <div class="projects">
+                <!-- Активный проект -->
+                <div class="card active-project">
+                    <div class="card-header">
+                        <span class="icon" style="font-size: 1.5rem;">📅</span>
+                        <span class="badge live">Работает</span>
+                    </div>
+                    <h3>Календарь событий</h3>
+                    <p>Всероссийское расписание сатсангов и ретритов. Мгновенная загрузка, умные фильтры и работа без интернета.</p>
+                    <a href="https://calendar.guruji.info" class="btn">
+                        Открыть календарь
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </a>
+                </div>
+
+                <!-- Будущие проекты -->
+                <div class="future-projects-row">
+                    <div class="card future">
+                        <div class="card-header">
+                            <span class="icon" style="font-size: 1.5rem;">📚</span>
+                            <span class="badge soon">В разработке</span>
+                        </div>
+                        <h3>База знаний</h3>
+                        <p>Мультимодальная Wiki-система. Аудио, тексты и видео с умной перелинковкой и семантическим поиском.</p>
+                    </div>
+
+                    <div class="card future">
+                        <div class="card-header">
+                            <span class="icon" style="font-size: 1.5rem;">🧠</span>
+                            <span class="badge soon">В планах</span>
+                        </div>
+                        <h3>ИИ-Ассистент</h3>
+                        <p>Персональный «второй мозг», анализирующий ваши запросы и первоисточники для точных ответов.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            &copy; 2025 Guruji.info Ecosystem
+        </footer>
+    </div>
+
+</body>
+</html>
